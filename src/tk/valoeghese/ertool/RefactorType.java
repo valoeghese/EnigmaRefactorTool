@@ -13,7 +13,8 @@ public
 enum
 RefactorType
 {
-	PACKAGE
+	PACKAGE,
+	PACKAGE_PLUS
 ,CLASSNAME
 ;
 
@@ -27,11 +28,20 @@ get
 	type
 )
 {
-	return
-valueOf(type
-.toUpperCase(
-Locale
-					.ROOT
-				));
+	type
+= 	type
+				.
+toUpperCase(
+	Locale
+						.ROOT
+)
+;
+	return type
+.equals
+							(
+		"PACKAGE+"
+)?
+		PACKAGE_PLUS: valueOf(type)
+		;
 	}
 }

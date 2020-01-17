@@ -15,8 +15,10 @@ public final class Main {
 		case CLASSNAME:
 			break;
 		case PACKAGE:
-			PackageRefactor.refactorPackage(programArgs.in, programArgs.out);
+			PackageRefactor.refactorPackage(programArgs.in, programArgs.out, false);
 			break;
+		case PACKAGE_PLUS:
+			PackageRefactor.refactorPackage(programArgs.in, programArgs.out, true);
 		}
 	}
 
@@ -28,6 +30,7 @@ public final class Main {
 		private String in;
 		private String out;
 		private String pkg;
+		private boolean verbose;
 
 		@Override
 		public void setArgs(ArgsData args) {
@@ -48,6 +51,7 @@ public final class Main {
 			}).replace('.', '/');
 
 			this.pkg = args.getStringOrDefault("package", "").replace('.', '/');
+			this.verbose = args.getBoolean("v");
 		}
 
 		public RefactorType getAction() {
@@ -64,6 +68,10 @@ public final class Main {
 
 		public String getPackage() {
 			return this.pkg;
+		}
+
+		public boolean beVerbose() {
+			return this.verbose;
 		}
 	}
 }
