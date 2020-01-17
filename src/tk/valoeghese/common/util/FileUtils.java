@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -73,18 +74,18 @@ public final class FileUtils {
 		file.renameTo(new File(newFolderLocation + "/" + file.getName()));
 	}
 
-	public static void forEachFileOfExtension(File root, String extension, Consumer<File> callback) {
+	public static void forEachFileOfExtension(File root, String extension, BiConsumer<File, String> callback) {
 		assert root.isDirectory() : "root file is not a directory! (FileUtils#forEachFileOfExtension)";
 		extension = "." + extension;
-		uForEachFileOfExtension(root, extension, callback);
+		uForEachFileOfExtension(root, extension, callback, "");
 	}
 
-	private static void uForEachFileOfExtension(File root, String extension, Consumer<File> callback) {
+	private static void uForEachFileOfExtension(File root, String extension, BiConsumer<File, String> callback, String directoryTrail) {
 		for (File file : root.listFiles()) {
 			if (file.isDirectory()) {
-				uForEachFileOfExtension(file, extension, callback);
+				uForEachFileOfExtension(file, extension, callback, directoryTrail + "/" + file.getName());
 			} else if (file.getName().endsWith(extension)) {
-				callback.accept(file);
+				callback.accept(file, directoryTrail);
 			}
 		}
 	}

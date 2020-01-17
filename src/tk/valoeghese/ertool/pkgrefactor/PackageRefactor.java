@@ -24,26 +24,28 @@ public final class PackageRefactor {
 		File inDirectory = new File("mappings/" + in);
 
 		if (subPackage) {
-			FileUtils.forEachFileOfExtension(inDirectory, "mapping", file -> modifyFile(file, in, out, outAbsolutePath));
+			FileUtils.forEachFileOfExtension(inDirectory, "mapping", (file, trail) -> modifyFile(file, in, out, outAbsolutePath, trail));
 		} else {
 			for (File file : inDirectory.listFiles()) {
 				String absolutePath = file.getAbsolutePath();
 
 				if (file.isFile() && absolutePath.endsWith(".mapping")) { // is mapping file
-					modifyFile(file, in, out, outAbsolutePath);
+					modifyFile(file, in, out, outAbsolutePath, "");
 				}
 			}
 		}
 	}
 
-	private static void modifyFile(File file, String in, String out, String outAbsolutePath) {
+	private static void modifyFile(File file, String in, String out, String outAbsolutePath, String trail) {
 		// refactor stuff
 		String nameWithExt = file.getName();
 		String name = nameWithExt.substring(0, nameWithExt.length() - 8);
 
 		FileUtils.modifyFile(file, data -> {
-			String inExpr = in.concat("/" + name);
-			String outExpr = out + "/" + name;
+			boolean trailEmpty = trail.isEmpty();
+
+			String inExpr = trailEmpty ? in + "/" + name : in + "/" + trail + "/" + name;
+			String outExpr = trailEmpty ? out + "/" + name : out + "/" + trail + "/" + name;
 
 			if (Main.programArgs.beVerbose()) {
 				System.out.println(inExpr + "\t->\t" + outExpr);
