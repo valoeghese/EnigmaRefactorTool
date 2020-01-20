@@ -15,7 +15,10 @@ public final class Main {
 
 	public static void main(String[] args) {
 		programArgs = ArgsParser.of(args, new Args());
+		runProgram();
+	}
 
+	public static void runProgram() {
 		switch (programArgs.getAction()) {
 		case CLASSNAME:
 			TitleRefactor.refactorTitle(programArgs.getIn(), programArgs.getOut(), programArgs.getPackage());
@@ -28,7 +31,9 @@ public final class Main {
 			break;
 		default: // file
 			String file = programArgs.getFile();
-			FileUtils.readLines(file, line -> main(line.split("\n")));
+			FileUtils.readLines(file, line -> {
+				programArgs = ArgsParser.of(new String[] {"-a"}, line.split("[ \t]"), new Args());
+			});
 			break;
 		}
 	}
