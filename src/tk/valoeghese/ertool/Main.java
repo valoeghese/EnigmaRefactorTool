@@ -1,9 +1,14 @@
 package tk.valoeghese.ertool;
 
+import java.io.File;
+
 import tk.valoeghese.common.ArgsData;
 import tk.valoeghese.common.ArgsParser;
 import tk.valoeghese.common.IProgramArgs;
-import tk.valoeghese.ertool.pkgrefactor.PackageRefactor;
+import tk.valoeghese.common.util.FileUtils;
+import tk.valoeghese.common.util.FunctionalUtils;
+import tk.valoeghese.ertool.refactor.PackageRefactor;
+import tk.valoeghese.ertool.refactor.TitleRefactor;
 
 public final class Main {
 	public static Args programArgs;
@@ -11,14 +16,20 @@ public final class Main {
 	public static void main(String[] args) {
 		programArgs = ArgsParser.of(args, new Args());
 
-		switch (programArgs.action) {
+		switch (programArgs.getAction()) {
 		case CLASSNAME:
+			TitleRefactor.refactorTitle(programArgs.getIn(), programArgs.getOut(), programArgs.getPackage());
 			break;
 		case PACKAGE:
-			PackageRefactor.refactorPackage(programArgs.in, programArgs.out, false);
+			PackageRefactor.refactorPackage(programArgs.getIn(), programArgs.getOut(), false);
 			break;
 		case PACKAGE_PLUS:
-			PackageRefactor.refactorPackage(programArgs.in, programArgs.out, true);
+			PackageRefactor.refactorPackage(programArgs.getIn(), programArgs.getOut(), true);
+			break;
+		default: // file
+			String file = programArgs.getFile();
+			FileUtils.readLines(file, line -> main(line.split("\n")));
+			break;
 		}
 	}
 
@@ -26,14 +37,23 @@ public final class Main {
 		private Args() {
 		}
 
-		private RefactorType action;
+		private RefactorType action = null;
 		private String in;
 		private String out;
 		private String pkg;
+		private String where;
+		private boolean immer = false;
 		private boolean verbose;
+		private String file;
 
 		@Override
 		public void setArgs(ArgsData args) {
+			this.file = args.getStringOrDefault("file", "");
+
+			if (!this.file.isEmpty()) {
+				return;
+			}
+
 			String actionStr = args.getString("action", 
 					() -> args.getString("a",
 							() -> {
@@ -51,6 +71,11 @@ public final class Main {
 			}).replace('.', '/');
 
 			this.pkg = args.getStringOrDefault("package", "").replace('.', '/');
+			this.where = args.getString("where", () -> {
+				this.immer = true;
+				return "";
+			});
+
 			this.verbose = args.getBoolean("v");
 		}
 
@@ -72,6 +97,19 @@ public final class Main {
 
 		public boolean beVerbose() {
 			return this.verbose;
+		}
+
+		public boolean matches(String input) {
+			return this.immer || FunctionalUtils.addFalseLogic(
+					input.matches(this.where),
+					() -> {
+						if (this.verbose) System.out.println(input + " does not match regex \"" + this.where + "\"");
+					}
+					);
+		}
+
+		public String getFile() {
+			return this.file;
 		}
 	}
 }

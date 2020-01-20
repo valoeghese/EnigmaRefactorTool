@@ -74,18 +74,36 @@ public final class FileUtils {
 		file.renameTo(new File(newFolderLocation + "/" + file.getName()));
 	}
 
-	public static void forEachFileOfExtension(File root, String extension, BiConsumer<File, String> callback) {
-		assert root.isDirectory() : "root file is not a directory! (FileUtils#forEachFileOfExtension)";
-		extension = "." + extension;
-		uForEachFileOfExtension(root, extension, callback, "");
+	/**
+	 * @throws SecurityException if a security manager exists and denies access, as specified in {@link File#renameTo(File)} or {@link File#getAbsoluteFile()}, used in this method
+	 */
+	public static void renameFile(File file, String newFileName) throws SecurityException {
+		file.renameTo(new File(file.getAbsoluteFile().getParent() + "/" + newFileName));
 	}
 
-	private static void uForEachFileOfExtension(File root, String extension, BiConsumer<File, String> callback, String directoryTrail) {
+	public static void trailFilesOfExtension(File root, String extension, BiConsumer<File, String> callback) {
+		assert root.isDirectory() : "root file is not a directory! (FileUtils#trailFilesOfExtension)";
+		extension = "." + extension;
+		uTrailFilesOfExtension(root, extension, callback, "");
+	}
+
+	private static void uTrailFilesOfExtension(File root, String extension, BiConsumer<File, String> callback, String directoryTrail) {
 		for (File file : root.listFiles()) {
 			if (file.isDirectory()) {
-				uForEachFileOfExtension(file, extension, callback, directoryTrail + "/" + file.getName());
+				uTrailFilesOfExtension(file, extension, callback, directoryTrail + "/" + file.getName());
 			} else if (file.getName().endsWith(extension)) {
 				callback.accept(file, directoryTrail);
+			}
+		}
+	}
+
+	public static void forEachFileOfExtension(File directory, String extension, Consumer<File> callback) {
+		assert directory.isDirectory() : "directory file is not a directory! (FileUtils#forEachFileOfExtension)";
+		extension = "." + extension;
+
+		for (File file : directory.listFiles()) {
+			if (!file.isDirectory() && file.getName().endsWith(extension)) {
+				callback.accept(file);
 			}
 		}
 	}
@@ -123,5 +141,19 @@ public final class FileUtils {
 				}
 			}
 		}
+	}
+	
+	public static void writeFile(File file, Consumer<PrintWriter> writeFunction) throws IOException {
+		if (!file.exists()) {
+			file.createNewFile();
+		}
+
+		try (PrintWriter writer = new PrintWriter(file, "UTF-8")) {
+			writeFunction.accept(writer);
+		}
+	}
+
+	public static void writeStringToFile(File file, String data) throws IOException {
+		writeFile(file, writer -> writer.print(data));
 	}
 }

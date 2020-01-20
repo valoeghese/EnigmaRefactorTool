@@ -1,4 +1,4 @@
-package tk.valoeghese.ertool.pkgrefactor;
+package tk.valoeghese.ertool.refactor;
 
 import java.io.File;
 import java.util.HashSet;
@@ -25,16 +25,10 @@ public final class PackageRefactor {
 		Set<String> trailToPathCache = new HashSet<>();
 
 		if (subPackage) {
-			FileUtils.forEachFileOfExtension(inDirectory, "mapping", (file, trail) -> modifyFile(file, in, out, outAbsolutePath, trail, trailToPathCache));
+			FileUtils.trailFilesOfExtension(inDirectory, "mapping", (file, trail) -> modifyFile(file, in, out, outAbsolutePath, trail, trailToPathCache));
 			FileUtils.cleanupEmptyDirectories(inDirectory);
 		} else {
-			for (File file : inDirectory.listFiles()) {
-				String absolutePath = file.getAbsolutePath();
-
-				if (file.isFile() && absolutePath.endsWith(".mapping")) { // is mapping file
-					modifyFile(file, in, out, outAbsolutePath, "", trailToPathCache);
-				}
-			}
+			FileUtils.forEachFileOfExtension(inDirectory, "mapping", file -> modifyFile(file, in, out, outAbsolutePath, "", trailToPathCache));
 		}
 	}
 
@@ -42,19 +36,22 @@ public final class PackageRefactor {
 		// refactor stuff
 		String nameWithExt = file.getName();
 		String name = nameWithExt.substring(0, nameWithExt.length() - 8);
-
 		boolean trailEmpty = trail.isEmpty();
+		String inExpr = trailEmpty ? in + "/" + name : in + trail + "/" + name;
+
+		if (!Main.programArgs.matches(inExpr)) {
+			return;
+		}
 
 		FileUtils.modifyFile(file, data -> {
-			String inExpr  = trailEmpty ? in + "/" + name  : in + trail + "/" + name;
 			String outExpr = trailEmpty ? out + "/" + name : out + trail + "/" + name;
 
 			if (Main.programArgs.beVerbose()) {
 				System.out.println(inExpr + "\t->\t" + outExpr);
 			}
 
-			inExpr = inExpr.replace("$", "\\$");
-			return data.replaceAll(inExpr, outExpr);
+			String inRegex = inExpr.replace("$", "\\$");
+			return data.replaceAll(inRegex, outExpr);
 		});
 
 		FileUtils.relocateFile(file, retrieveFilePath(trailToPathCache, outAbsolutePath, trail));
