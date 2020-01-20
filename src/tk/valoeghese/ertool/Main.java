@@ -33,6 +33,7 @@ public final class Main {
 			String file = programArgs.getFile();
 			FileUtils.readLines(file, line -> {
 				programArgs = ArgsParser.of(new String[] {"-a"}, line.split("[ \t]"), new Args());
+				runProgram();
 			});
 			break;
 		}
