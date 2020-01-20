@@ -11,14 +11,16 @@ public final class TitleRefactor {
 
 	private static boolean verboseCache = false;
 
-	public static void refactorTitle(String inRegex, String out, String pkg) {
+	public static void refactorTitle(String inRegex, String out, String pkgRaw) {
 		verboseCache = Main.programArgs.beVerbose();
 
 		File mappingsDirectory = new File("mappings/");
 		assert mappingsDirectory.isDirectory() : "No ./mappings/ directory found";
 
-		boolean subPackage = pkg.endsWith("+");
-		File directory = new File("mappings/" + (subPackage ? pkg.substring(0, pkg.length() - 1) : pkg));
+		boolean subPackage = pkgRaw.endsWith("+");
+		String pkg = subPackage ? pkgRaw.substring(0, pkgRaw.length() - 1) : pkgRaw;
+
+		File directory = new File("mappings/" + pkg);
 
 		if (subPackage) {
 			FileUtils.trailFilesOfExtension(directory, "mapping", (file, trail) -> modifyFile(file, inRegex, out, pkg, trail));
