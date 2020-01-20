@@ -89,4 +89,39 @@ public final class FileUtils {
 			}
 		}
 	}
+
+	public static void cleanupEmptyDirectories(File root) {
+		assert root.isDirectory() : "root file is not a directory! (FileUtils#cleanupEmptyDirectories)";
+		File[] files = root.listFiles();
+
+		if (files.length == 0) {
+			root.delete();
+		} else {
+			uCleanupEmptyDirectories(files);
+			files = root.listFiles();
+
+			if (files.length == 0) {
+				root.delete();
+			}
+		}
+	}
+
+	private static void uCleanupEmptyDirectories(File[] files) {
+		for (File file : files) {
+			if (file.isDirectory()) {
+				File[] newFiles = file.listFiles();
+
+				if (newFiles.length == 0) {
+					file.delete();
+				} else {
+					uCleanupEmptyDirectories(newFiles);
+					newFiles = file.listFiles();
+
+					if (newFiles.length == 0) {
+						file.delete();
+					}
+				}
+			}
+		}
+	}
 }
