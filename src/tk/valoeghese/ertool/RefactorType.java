@@ -15,7 +15,8 @@ RefactorType
 {
 	PACKAGE,
 	PACKAGE_PLUS
-,CLASSNAME
+,CLASSNAME,
+ FILE
 ;
 
 public

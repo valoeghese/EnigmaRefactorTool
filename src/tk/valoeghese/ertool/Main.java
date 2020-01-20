@@ -1,7 +1,5 @@
 package tk.valoeghese.ertool;
 
-import java.io.File;
-
 import tk.valoeghese.common.ArgsData;
 import tk.valoeghese.common.ArgsParser;
 import tk.valoeghese.common.IProgramArgs;
@@ -29,7 +27,7 @@ public final class Main {
 		case PACKAGE_PLUS:
 			PackageRefactor.refactorPackage(programArgs.getIn(), programArgs.getOut(), true);
 			break;
-		default: // file
+		case FILE: // file
 			String file = programArgs.getFile();
 			FileUtils.readLines(file, line -> {
 				programArgs = ArgsParser.of(new String[] {"-a"}, line.split("[ \t]"), new Args());
@@ -43,7 +41,7 @@ public final class Main {
 		private Args() {
 		}
 
-		private RefactorType action = null;
+		private RefactorType action = RefactorType.FILE;
 		private String in;
 		private String out;
 		private String pkg;
