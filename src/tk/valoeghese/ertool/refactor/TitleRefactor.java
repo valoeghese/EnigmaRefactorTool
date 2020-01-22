@@ -42,14 +42,16 @@ public final class TitleRefactor {
 
 		String newName = name.replaceAll(inRegex, out);
 
-		FileUtils.modifyFile(file, data -> {
-			String modified = trailEmpty ? pkg + "/" + newName : pkg + trail + "/" + newName;
+		FileUtils.badlyHandleIOException(() -> {
+			FileUtils.modifyFile(file, data -> {
+				String modified = trailEmpty ? pkg + "/" + newName : pkg + trail + "/" + newName;
 
-			if (verboseCache) {
-				System.out.println(original + "\t->\t" + modified);
-			}
+				if (verboseCache) {
+					System.out.println(original + "\t->\t" + modified);
+				}
 
-			return data.replaceAll(original, modified);
+				return data.replaceAll(original, modified);
+			});
 		});
 
 		FileUtils.renameFile(file, newName + ".mapping");

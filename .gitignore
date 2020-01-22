@@ -3,3 +3,6 @@ mappings/
 .settings/
 out/
 *.launch
+*.class
+*.jar
+test.zip

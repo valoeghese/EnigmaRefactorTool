@@ -16,7 +16,8 @@ RefactorType
 	PACKAGE,
 	PACKAGE_PLUS
 ,CLASSNAME,
- FILE
+ FILE,
+ 					IINTERFACE
 ;
 
 public

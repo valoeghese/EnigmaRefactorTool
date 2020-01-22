@@ -43,16 +43,19 @@ public final class PackageRefactor {
 			return;
 		}
 
-		FileUtils.modifyFile(file, data -> {
-			String outExpr = trailEmpty ? out + "/" + name : out + trail + "/" + name;
+		FileUtils.badlyHandleIOException(() -> {
+			FileUtils.modifyFile(file, data -> {
+				String outExpr = trailEmpty ? out + "/" + name : out + trail + "/" + name;
 
-			if (Main.programArgs.beVerbose()) {
-				System.out.println(inExpr + "\t->\t" + outExpr);
-			}
+				if (Main.programArgs.beVerbose()) {
+					System.out.println(inExpr + "\t->\t" + outExpr);
+				}
 
-			String inRegex = inExpr.replace("$", "\\$");
-			return data.replaceAll(inRegex, outExpr);
+				String inRegex = inExpr.replace("$", "\\$");
+				return data.replaceAll(inRegex, outExpr);
+			});
 		});
+			
 
 		FileUtils.relocateFile(file, retrieveFilePath(trailToPathCache, outAbsolutePath, trail));
 	}

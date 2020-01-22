@@ -1,69 +1,71 @@
 package tk.valoeghese.common.util;
 
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Enumeration;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import tk.valoeghese.common.exception.RuntimeIOException;
+import tk.valoeghese.common.io.ByteDataInput;
+import tk.valoeghese.common.io.LittleEndianInputStream;
+import tk.valoeghese.common.util.function.IOThrowingConsumer;
+import tk.valoeghese.common.util.function.NullConsumer;
 
 public final class FileUtils {
 	private FileUtils() {
 	}
 
 	/**
-	 * @throws RuntimeIOException if there was an IOException.
+	 * @throws IOException.
 	 */
-	public static void readLines(String path, Consumer<String> lineConsumer) {
+	public static void readLines(String path, Consumer<String> lineConsumer) throws IOException {
 		try (Stream<String> lineStream = Files.lines(Paths.get(path))) {
 			lineStream.forEach(line -> {
 				if (!line.trim().isEmpty()) {
 					lineConsumer.accept(line);
 				}
 			});
-		} catch (IOException e) {
-			throw new RuntimeIOException(e);
 		}
 	}
 
 	/**
-	 * @throws RuntimeIOException if there was an IOException.
+	 * @throws IOException.
 	 */
-	public static void modifyFile(File file, Function<String, String> modificationFunction) {
+	public static void modifyFile(File file, Function<String, String> modificationFunction) throws IOException {
 		String data = null;
 
 		try (FileInputStream fileInput = new FileInputStream(file)) {
-			data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())), StandardCharsets.UTF_8);
+			data = modificationFunction.apply(new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())), StandardCharsets.UTF_8));
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			throw new RuntimeIOException(e);
 		}
 
 		try (PrintWriter fileOutput = new PrintWriter(file)) {
-			fileOutput.println(modificationFunction.apply(data));
-		} catch (FileNotFoundException e) {
-			throw new RuntimeIOException(e);
+			fileOutput.print(data);
 		}
 	}
 
 	/**
-	 * @throws RuntimeIOException if there was an IOException.
+	 * @throws IOException.
 	 */
-	public static void readFirstLine(String path, Consumer<String> lineConsumer) {
+	public static void readFirstLine(String path, Consumer<String> lineConsumer) throws IOException {
 		try (Stream<String> lineStream = Files.lines(Paths.get(path))) {
 			lineConsumer.accept(lineStream.findFirst().get());
-		} catch (IOException e) {
-			throw new RuntimeIOException(e);
 		}
 	}
 
@@ -95,6 +97,18 @@ public final class FileUtils {
 				callback.accept(file, directoryTrail);
 			}
 		}
+	}
+
+	public static void trailZipFileItems(String zipFile, BiConsumer<ZipFile, ZipEntry> callback) throws IOException {
+		ZipFile zip = new ZipFile(zipFile);
+		Enumeration<? extends ZipEntry> entries = zip.entries();
+
+		while (entries.hasMoreElements()) {
+			ZipEntry entry = entries.nextElement();
+			callback.accept(zip, entry);
+		}
+
+		zip.close();
 	}
 
 	public static void forEachFileOfExtension(File directory, String extension, Consumer<File> callback) {
@@ -142,7 +156,7 @@ public final class FileUtils {
 			}
 		}
 	}
-	
+
 	public static void writeFile(File file, Consumer<PrintWriter> writeFunction) throws IOException {
 		if (!file.exists()) {
 			file.createNewFile();
@@ -155,5 +169,45 @@ public final class FileUtils {
 
 	public static void writeStringToFile(File file, String data) throws IOException {
 		writeFile(file, writer -> writer.print(data));
+	}
+
+	public static void readFileBytes(File file, IntPredicate callback) throws IOException {
+		try (FileInputStream f = new FileInputStream(file)) {
+			readBytes(f, callback);
+		}
+	}
+
+	public static void readBytes(InputStream inputStream, IntPredicate callback) throws IOException {
+		int data;
+
+		while ((data = inputStream.read()) != -1) { 
+			if (!callback.test(data)) {
+				return;
+			}
+		}
+	}
+
+	public static void badlyHandleIOException(NullConsumer.IOThrowing callback) throws RuntimeIOException {
+		try {
+			callback.run();
+		} catch (IOException e) {
+			throw new RuntimeIOException(e);
+		}
+	}
+
+	public static void openDataInputStream(InputStreamSupplier inputStreamSupplier, IOThrowingConsumer<DataInput> callback) throws IOException {
+		try (DataInputStream dataInputStream = new DataInputStream(inputStreamSupplier.get())) {
+			callback.accept(dataInputStream);
+		}
+	}
+
+	public static void openLittleEndianInputStream(InputStreamSupplier inputStreamSupplier, IOThrowingConsumer<ByteDataInput> callback) throws IOException {
+		try (LittleEndianInputStream leInputStream = new LittleEndianInputStream(inputStreamSupplier.get())) {
+			callback.accept(leInputStream);
+		}
+	}
+
+	public static interface InputStreamSupplier {
+		InputStream get() throws IOException;
 	}
 }

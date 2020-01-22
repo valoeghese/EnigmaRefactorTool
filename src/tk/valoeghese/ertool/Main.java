@@ -1,22 +1,25 @@
 package tk.valoeghese.ertool;
 
+import java.io.IOException;
+
 import tk.valoeghese.common.ArgsData;
 import tk.valoeghese.common.ArgsParser;
 import tk.valoeghese.common.IProgramArgs;
 import tk.valoeghese.common.util.FileUtils;
 import tk.valoeghese.common.util.FunctionalUtils;
+import tk.valoeghese.ertool.refactor.DecompilerRefactor;
 import tk.valoeghese.ertool.refactor.PackageRefactor;
 import tk.valoeghese.ertool.refactor.TitleRefactor;
 
 public final class Main {
 	public static Args programArgs;
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		programArgs = ArgsParser.of(args, new Args());
 		runProgram();
 	}
 
-	public static void runProgram() {
+	public static void runProgram() throws IOException {
 		switch (programArgs.getAction()) {
 		case CLASSNAME:
 			TitleRefactor.refactorTitle(programArgs.getIn(), programArgs.getOut(), programArgs.getPackage());
@@ -27,16 +30,23 @@ public final class Main {
 		case PACKAGE_PLUS:
 			PackageRefactor.refactorPackage(programArgs.getIn(), programArgs.getOut(), true);
 			break;
-		case FILE: // file
+		case FILE:
 			String file = programArgs.getFile();
+
 			FileUtils.readLines(file, line -> {
 				programArgs = ArgsParser.of(new String[] {"-a"}, line.split("[ \t]"), new Args());
-				try {
-					runProgram();
-				} catch (RuntimeException e) {
-					e.printStackTrace();
-				}
+
+				FileUtils.badlyHandleIOException(() -> {
+					try {
+						runProgram();
+					} catch (NullPointerException e) {
+						e.printStackTrace();
+					}
+				});
 			});
+			break;
+		case IINTERFACE:
+			DecompilerRefactor.refactorInterfaces(programArgs.getFile(), programArgs.getPackage());
 			break;
 		}
 	}
@@ -56,9 +66,23 @@ public final class Main {
 
 		@Override
 		public void setArgs(ArgsData args) {
+			this.verbose = args.getBoolean("v");
+			this.pkg = args.getStringOrDefault("package", "").replace('.', '/');
+			this.where = args.getString("where", () -> {
+				this.immer = true;
+				return "";
+			});
+
 			this.file = args.getStringOrDefault("file", "");
 
 			if (!this.file.isEmpty()) {
+				String action = args.getString("action",
+						() -> args.getStringOrDefault("a", null));
+
+				if (action != null) {
+					this.action = RefactorType.get(action);
+				}
+
 				return;
 			}
 
@@ -77,14 +101,6 @@ public final class Main {
 			this.out = args.getString("out", () -> {
 				throw new RuntimeException("Must Specify an output for refactor! -out [action]");
 			}).replace('.', '/');
-
-			this.pkg = args.getStringOrDefault("package", "").replace('.', '/');
-			this.where = args.getString("where", () -> {
-				this.immer = true;
-				return "";
-			});
-
-			this.verbose = args.getBoolean("v");
 		}
 
 		public RefactorType getAction() {

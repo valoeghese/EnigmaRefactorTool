@@ -1,5 +1,7 @@
 package tk.valoeghese.common.util;
 
+import tk.valoeghese.common.util.function.NullConsumer;
+
 public final class FunctionalUtils {
 	private FunctionalUtils() {
 	}
