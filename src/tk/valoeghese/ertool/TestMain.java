@@ -3,6 +3,7 @@ package tk.valoeghese.ertool;
 import java.io.IOException;
 import java.util.zip.ZipFile;
 
+import tk.valoeghese.common.io.Console;
 import tk.valoeghese.common.util.BytecodeUtils;
 
 public final class TestMain {
@@ -29,8 +30,10 @@ public final class TestMain {
 		//	        System.out.println(entry);
 		//InputStream stream = zipFile.getInputStream(entry);
 		//	    }
+		String clasz =// "net/minecraft/class_3630.class";
+		"net/minecraft/class_4481.class";
 
-		System.out.println(BytecodeUtils.isInterface(() -> zipFile.getInputStream(zipFile.getEntry("net/minecraft/class_3658.class"))));
+		Console.out.printFlags(BytecodeUtils.getAccessFlags(() -> zipFile.getInputStream(zipFile.getEntry(clasz))));
 		//try(InputStream e = zipFile.getInputStream(zipFile.getEntry("net/minecraft/class_3658.class"))) {
 		//	FileUtils.readBytes(e, TestMain::printByte);
 		//}

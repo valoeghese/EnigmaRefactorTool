@@ -9,7 +9,11 @@ public final class BytecodeUtils {
 	}
 
 	public static boolean isInterface(InputStreamSupplier inputStreamSupplier) throws IOException {
-		Flag result = new Flag();
+		return (getAccessFlags(inputStreamSupplier) & 0x200) != 0;
+	}
+
+	public static int getAccessFlags(InputStreamSupplier inputStreamSupplier) throws IOException {
+		IntWrapper result = new IntWrapper();
 
 		FileUtils.openDataInputStream(inputStreamSupplier, stream -> {
 			int magic = stream.readInt();
@@ -30,16 +34,17 @@ public final class BytecodeUtils {
 					stream.skipBytes(length);
 				} else if (tag == 15) { // MethodHandle
 					stream.skipBytes(3);
+				} else if (tag == 2 || tag == 13 || tag == 14 || tag == 17 || tag > 18) {
+					throw new RuntimeException("Invalid tag");
 				} else { // FieldRef, MethodRef, InterfaceMethodRef, NameAndType, Int, Float, InvokeDynamic
 					stream.skipBytes(4);
 				} // tags 2, 13, 14, 17, 19+ are invalid/unused
 			}
-			
-			int accessFlags = stream.readUnsignedShort();
 
-			result.checkFlagValue(accessFlags, 0x200);
+			int accessFlags = stream.readUnsignedShort();
+			result.setValue(accessFlags);
 		});
 
-		return result.booleanValue();
+		return result.intValue();
 	}
 }
