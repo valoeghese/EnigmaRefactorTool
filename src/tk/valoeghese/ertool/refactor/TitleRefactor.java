@@ -42,6 +42,10 @@ public final class TitleRefactor {
 
 		String newName = name.replaceAll(inRegex, out);
 
+		if (name.equals(newName)) {
+			return;
+		}
+
 		FileUtils.badlyHandleIOException(() -> {
 			FileUtils.modifyFile(file, data -> {
 				String modified = trailEmpty ? pkg + "/" + newName : pkg + trail + "/" + newName;

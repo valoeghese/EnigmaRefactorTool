@@ -55,7 +55,7 @@ public final class PackageRefactor {
 				return data.replaceAll(inRegex, outExpr);
 			});
 		});
-			
+
 
 		FileUtils.relocateFile(file, retrieveFilePath(trailToPathCache, outAbsolutePath, trail));
 	}
