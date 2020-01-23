@@ -11,11 +11,21 @@ public final class BytecodeUtils {
 	private BytecodeUtils() {
 	}
 
+	private static boolean useASM = false;
+
+	public static void setUseASM() {
+		useASM = true;
+	}
+
 	public static boolean isInterface(InputStreamSupplier inputStreamSupplier) throws IOException {
 		return (getAccessFlags(inputStreamSupplier) & 0x200) != 0;
 	}
 
 	public static int getAccessFlags(InputStreamSupplier inputStreamSupplier) throws IOException {
+		if (useASM) {
+			return ASMBytecodeUtils.getAccessFlags(inputStreamSupplier.get());
+		}
+
 		IntWrapper result = new IntWrapper();
 		//DebugPrinter umn = new UniqueMessageDebugPrinter();
 
