@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.zip.ZipFile;
 
-import tk.valoeghese.common.util.BytecodeUtils;
 import tk.valoeghese.common.util.FileUtils;
 import tk.valoeghese.common.util.Flag;
+import tk.valoeghese.common.util.bytecode.BytecodeUtils;
 import tk.valoeghese.ertool.Main;
 
 public final class DecompilerRefactor {

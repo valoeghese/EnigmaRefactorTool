@@ -4,5 +4,6 @@ mappings/
 out/
 *.launch
 *.class
-*.jar
+intermediary.jar
+procyon.jar
 test.zip

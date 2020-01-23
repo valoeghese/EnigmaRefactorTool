@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -20,7 +21,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import tk.valoeghese.common.exception.RuntimeIOException;
 import tk.valoeghese.common.io.ByteDataInput;
 import tk.valoeghese.common.io.LittleEndianInputStream;
 import tk.valoeghese.common.util.function.IOThrowingConsumer;
@@ -187,11 +187,11 @@ public final class FileUtils {
 		}
 	}
 
-	public static void badlyHandleIOException(NullConsumer.IOThrowing callback) throws RuntimeIOException {
+	public static void badlyHandleIOException(NullConsumer.IOThrowing callback) throws UncheckedIOException {
 		try {
 			callback.run();
 		} catch (IOException e) {
-			throw new RuntimeIOException(e);
+			throw new UncheckedIOException(e);
 		}
 	}
 

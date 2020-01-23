@@ -3,8 +3,10 @@ package tk.valoeghese.ertool;
 import java.io.IOException;
 import java.util.zip.ZipFile;
 
+import org.objectweb.asm.ClassReader;
+
 import tk.valoeghese.common.io.Console;
-import tk.valoeghese.common.util.BytecodeUtils;
+import tk.valoeghese.common.util.bytecode.BytecodeUtils;
 
 public final class TestMain {
 	private static int counter = 0;
@@ -23,20 +25,15 @@ public final class TestMain {
 	static void testZipReading() throws IOException {
 		ZipFile zipFile = new ZipFile("./intermediary.jar");
 
-		//Enumeration<? extends ZipEntry> entries = zipFile.entries();
-
-		//	    while(entries.hasMoreElements()) {
-		//	        ZipEntry entry = entries.nextElement();
-		//	        System.out.println(entry);
-		//InputStream stream = zipFile.getInputStream(entry);
-		//	    }
 		String clasz =// "net/minecraft/class_3630.class";
 		"net/minecraft/class_4481.class";
 
+		ClassReader reader = new ClassReader(zipFile.getInputStream(zipFile.getEntry(clasz)));
+
+//		System.out.println(reader.readConst(723, new char[Short.MAX_VALUE])); // this crashes asm
+
+		Console.out.printFlags(reader.getAccess());
 		Console.out.printFlags(BytecodeUtils.getAccessFlags(() -> zipFile.getInputStream(zipFile.getEntry(clasz))));
-		//try(InputStream e = zipFile.getInputStream(zipFile.getEntry("net/minecraft/class_3658.class"))) {
-		//	FileUtils.readBytes(e, TestMain::printByte);
-		//}
 
 		zipFile.close();
 	}
